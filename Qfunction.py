@@ -99,7 +99,7 @@ if __name__ == '__main__':
     import numpy as np
     import sys
     filename = sys.argv[1]
-    
+    #TODO - need to run vaccuum correction 
     data = np.load(filename)
     output = data[171,:,:].flatten()*np.sqrt(2.0)/13074
     x = np.real(output)

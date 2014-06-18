@@ -91,7 +91,7 @@ def avg_n(X,Y,Z):
     return 0.5*(Z*(X**2 + Y**2)).sum() - 1
    
 def std_n(X,Y,Z):
-    term1 = (Z * (0.25*X**2 + (0.5 * X**2 * Y**2) + 0.25*Y**2)).sum()
+    term1 = (Z * (0.25*X**4 + (0.5 * X**2 * Y**2) + 0.25*Y**4)).sum()
     term2 = (Z * (0.5*(X**2 + Y**2))).sum()
     return term1 - 3*term2 + 1
 

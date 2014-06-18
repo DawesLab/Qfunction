@@ -1,6 +1,9 @@
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+from matplotlib.mlab import griddata
 import numpy as np
+from scipy.stats import gaussian_kde
+from matplotlib import rc
 
 def qfunc3d(x,y,bins=4):
     fig = plt.figure()
@@ -24,7 +27,7 @@ def qfunc3d(x,y,bins=4):
 
     return fig
 
-def qfuncimage(array,bins=10,dolog=False,scaling=1.0):
+def qfuncimage(array,bins=30,dolog=False,scaling=1.0):
     x = scaling*np.imag(array) # x is first dim. so imshow has it vertical
     y = scaling*np.real(array) # y is second dim. so imshow has it horizontal
 
@@ -47,3 +50,66 @@ def qfuncimage(array,bins=10,dolog=False,scaling=1.0):
     plt.title("Q function")
 
     return fig
+
+def qsurf(x,y,bins=30):
+    """Create a surface plot after calculating a kernel estimate"""
+    X,Y,Z = kernel_estimate(x,y,bins) 
+
+    fig = plt.figure(figsize=(8.6,9))  # PRL default width
+    ax = Axes3D(fig)
+
+    surf = ax.plot_surface(X,Y,Z.reshape(X.shape),cstride=1,rstride=1)
+    
+    contourz = (Z.min()-Z.max())*1.2  # where to put the contours
+    
+    cset = ax.contour(X,Y,Z.reshape(X.shape),zdir='z',offset=contourz)
+    ax.set_xlabel('$x_p$')
+    ##ax.set_xlim(-40, 40)
+    ax.set_ylabel('$y_p$')
+    ##ax.set_ylim(-40, 40)
+    ax.set_zlabel('$Q$')
+    ax.set_zlim(contourz,Z.max()*1.1)
+    return fig
+
+def kernel_estimate(x,y,bins=30):
+    """Use the x and y data sets to create a PDF over the x,y range.
+    Returns X,Y,Z where Z is the estimated PDF over X,Y"""
+    xmin = x.min()
+    xmax = x.max()
+    ymin = y.min()
+    ymax = y.max()
+
+    X, Y = np.mgrid[xmin:xmax:bins*2j, ymin:ymax:bins*2j]
+    positions = np.vstack([X.ravel(), Y.ravel()])
+    values = np.vstack([x, y])
+    kernel = gaussian_kde(values)
+    Z = np.reshape(kernel(positions).T, X.shape)
+    Z = Z/Z.sum() # normalize Z
+    return X,Y,Z
+
+def avg_n(X,Y,Z):
+    return 0.5*(Z*(X**2 + Y**2)).sum() - 1
+   
+def std_n(X,Y,Z):
+    term1 = (Z * (0.25*X**2 + (0.5 * X**2 * Y**2) + 0.25*Y**2)).sum()
+    term2 = (Z * (0.5*(X**2 + Y**2))).sum()
+    return term1 - 3*term2 + 1
+
+if __name__ == '__main__':
+    import numpy as np
+    import sys
+    filename = sys.argv[1]
+    
+    data = np.load(filename)
+    output = data[171,:,:].flatten()*np.sqrt(2.0)/13074
+    x = np.real(output)
+    y = np.imag(output)
+    
+    X,Y,Z = kernel_estimate(x,y)
+    print "Avg n = ", avg_n(X,Y,Z)
+    print "StDev n = ", std_n(X,Y,Z)
+
+    #fig = qsurf(x,y)
+    #plt.show()
+    
+

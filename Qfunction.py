@@ -53,15 +53,15 @@ def qfuncimage(array,bins=30,dolog=False,scaling=1.0):
 
 def qsurf(x,y,bins=30):
     """Create a surface plot after calculating a kernel estimate"""
-    X,Y,Z = kernel_estimate(x,y,bins) 
+    X,Y,Z = kernel_estimate(x,y,bins)
 
     fig = plt.figure(figsize=(8.6,9))  # PRL default width
     ax = Axes3D(fig)
 
     surf = ax.plot_surface(X,Y,Z.reshape(X.shape),cstride=1,rstride=1)
-    
+
     contourz = (Z.min()-Z.max())*1.2  # where to put the contours
-    
+
     cset = ax.contour(X,Y,Z.reshape(X.shape),zdir='z',offset=contourz)
     ax.set_xlabel('$x_p$')
     ##ax.set_xlim(-40, 40)
@@ -88,28 +88,28 @@ def kernel_estimate(x,y,bins=30):
     return X,Y,Z
 
 def avg_n(X,Y,Z):
-    return 0.5*(Z*(X**2 + Y**2)).sum() - 1
-   
+    return (Z*(X**2 + Y**2)).sum() - 1
+
 def std_n(X,Y,Z):
-    term1 = (Z * (0.25*X**4 + (0.5 * X**2 * Y**2) + 0.25*Y**4)).sum()
-    term2 = (Z * (0.5*(X**2 + Y**2))).sum()
+    term1 = (Z * (X**4 + (X**2 * Y**2) + Y**4)).sum()
+    term2 = (Z * (X**2 + Y**2)).sum()
     return term1 - 3*term2 + 1
 
 if __name__ == '__main__':
     import numpy as np
     import sys
     filename = sys.argv[1]
-    #TODO - need to run vaccuum correction 
+    #TODO - need to run vaccuum correction
     data = np.load(filename)
     output = data[171,:,:].flatten()*np.sqrt(2.0)/13074
     x = np.real(output)
     y = np.imag(output)
-    
+
     X,Y,Z = kernel_estimate(x,y)
     print "Avg n = ", avg_n(X,Y,Z)
     print "StDev n = ", std_n(X,Y,Z)
 
     #fig = qsurf(x,y)
     #plt.show()
-    
+
 

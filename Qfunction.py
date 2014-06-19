@@ -88,12 +88,15 @@ def kernel_estimate(x,y,bins=30):
     return X,Y,Z
 
 def avg_n(X,Y,Z):
-    return (Z*(X**2 + Y**2)).sum() - 1
+    return (Z*0.5*(X**2 + Y**2)).sum() - 1
+
+def est_avg_n(x,y):
+    return np.average(x**2+y**2)*0.5
 
 def std_n(X,Y,Z):
-    term1 = (Z * (X**4 + (X**2 * Y**2) + Y**4)).sum()
-    term2 = (Z * (X**2 + Y**2)).sum()
-    return term1 - 3*term2 + 1
+    nsquared = (Z * (0.25*X**4 + 0.5*(X**2 * Y**2) + 0.25*Y**4 - 1.5*X**2 - 1.5*Y**2 + 1)).sum()
+    avgn = avg_n(X,Y,Z)
+    return np.sqrt(nsquared - avgn**2)
 
 if __name__ == '__main__':
     import numpy as np
@@ -106,6 +109,7 @@ if __name__ == '__main__':
     y = np.imag(output)
 
     X,Y,Z = kernel_estimate(x,y)
+    print "naive Avg n = ", est_avg_n(x,y)
     print "Avg n = ", avg_n(X,Y,Z)
     print "StDev n = ", std_n(X,Y,Z)
 

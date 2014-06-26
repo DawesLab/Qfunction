@@ -1,29 +1,44 @@
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib.mlab import griddata
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
 from scipy.stats import gaussian_kde
 from matplotlib import rc
 
-def qfunc3d(x,y,bins=4):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    #x, y = np.random.rand(2, 100) * 4 # original x and y
+def qsurf_publish(x,y,bins=30):
+    fig = plt.figure(figsize=(3.38,2))  # PRL default width
+    ax = fig.add_subplot(121, projection='3d')
+    plt.subplots_adjust(left=0, right=0.9, top=1, bottom=0)
+    
     hist, xedges, yedges = np.histogram2d(x, y, bins)
 
-    elements = (len(xedges) - 1) * (len(yedges) - 1)
-    xpos, ypos = np.meshgrid(xedges[:-1]+0.25, yedges[:-1]+0.25)
+    X, Y = np.meshgrid(xedges[:-1], yedges[:-1])
+    Z = hist
+    Z = Z/Z.sum() # normalize Z
 
-    barsize = xedges[1] - xedges[0]
+    #ax.bar3d(xpos, ypos, zpos, dx, dy, dz, color='b', zsort='average')
+    surf = ax.plot_surface(X,Y,Z,cstride=1,rstride=1,color="white",shade=False)
 
-    xpos = xpos.flatten()
-    ypos = ypos.flatten()
-    zpos = np.zeros(elements)
-    dx = barsize * np.ones_like(zpos)
-    dy = dx.copy()
-    dz = hist.flatten()
+    contourz = (Z.min()-Z.max())*0.6  # where to put the contours
 
-    ax.bar3d(xpos, ypos, zpos, dx, dy, dz, color='b', zsort='average')
+    cset = ax.contour(X,Y,Z.reshape(X.shape),zdir='z',offset=contourz)
+    
+    ax.set_xlabel(r'$x_p$')
+    ##ax.set_xlim(-40, 40)
+    ax.set_ylabel(r'$y_p$')
+    ##ax.set_ylim(-40, 40)
+    ax.set_zlabel(r'$Q$')
+    ax.set_zlim(contourz,Z.max()*1.1)
+
+    #ax.zaxis.set_major_locator(LinearLocator(3))
+    #ax.zaxis.set_major_formatter(FormatStrFormatter("%.02f"))
+    ax.view_init(elev=10., azim=-45)
+    #ax.locator_params(tight=True)
+    ax.tick_params(labelsize=10)
+    #ax.set_xticks([min(x), max(x), 0.0])
+    #ax.set_yticks([min(y), max(y), 0.0])
+    #ax.set_zticks([min(Z), max(Z), 0.0])
 
     return fig
 
@@ -54,25 +69,36 @@ def qfuncimage(array,bins=30,dolog=False,scaling=1.0):
 def qsurf(x,y,bins=30):
     """Create a surface plot after calculating a kernel estimate"""
     X,Y,Z = kernel_estimate(x,y,bins)
+    
+    #font = {'size':18}
+    #rc('font', **font)
 
-    fig = plt.figure(figsize=(8.6,9))  # PRL default width
-    ax = Axes3D(fig)
+    fig = plt.figure(figsize=(3.38,4))  # PRL default width
+    ax = fig.add_subplot(1, 1, 1, projection='3d')
+    plt.subplots_adjust(left=0, right=0.9, top=1, bottom=0)
 
-    surf = ax.plot_surface(X,Y,Z.reshape(X.shape),cstride=1,rstride=1)
+    surf = ax.plot_surface(X,Y,Z.reshape(X.shape),cstride=2,rstride=2,color="white",shade=False)
 
     contourz = (Z.min()-Z.max())*1.2  # where to put the contours
 
     cset = ax.contour(X,Y,Z.reshape(X.shape),zdir='z',offset=contourz)
-    ax.set_xlabel('$x_p$',fontsize=24)
+    
+    ax.set_xlabel(r'$x_p$')
     ##ax.set_xlim(-40, 40)
-    ax.set_ylabel('$y_p$',fontsize=24)
+    ax.set_ylabel(r'$y_p$')
     ##ax.set_ylim(-40, 40)
-    ax.set_zlabel('$Q$',fontsize=24)
+    ax.set_zlabel(r'$Q$')
     ax.set_zlim(contourz,Z.max()*1.1)
-    ax.tick_params(labelsize=20)
-    ax.set_xticks([min(x), max(x), 0.0])
-    ax.set_yticks([min(y), max(y), 0.0])
+
+    #ax.zaxis.set_major_locator(LinearLocator(3))
+    #ax.zaxis.set_major_formatter(FormatStrFormatter("%.02f"))
+    ax.view_init(elev=20., azim=-45)
+    #ax.locator_params(tight=True)
+    #ax.tick_params(labelsize=20)
+    #ax.set_xticks([min(x), max(x), 0.0])
+    #ax.set_yticks([min(y), max(y), 0.0])
     #ax.set_zticks([min(Z), max(Z), 0.0])
+
     return fig
 
 def kernel_estimate(x,y,bins=30):
@@ -117,7 +143,7 @@ if __name__ == '__main__':
     print "Avg n = ", avg_n(X,Y,Z)
     print "StDev n = ", std_n(X,Y,Z)
 
-    fig = qsurf(x,y)
+    fig = qsurf_publish(x,y)
     plt.show()
 
 

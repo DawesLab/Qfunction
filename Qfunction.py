@@ -63,12 +63,16 @@ def qsurf(x,y,bins=30):
     contourz = (Z.min()-Z.max())*1.2  # where to put the contours
 
     cset = ax.contour(X,Y,Z.reshape(X.shape),zdir='z',offset=contourz)
-    ax.set_xlabel('$x_p$')
+    ax.set_xlabel('$x_p$',fontsize=24)
     ##ax.set_xlim(-40, 40)
-    ax.set_ylabel('$y_p$')
+    ax.set_ylabel('$y_p$',fontsize=24)
     ##ax.set_ylim(-40, 40)
-    ax.set_zlabel('$Q$')
+    ax.set_zlabel('$Q$',fontsize=24)
     ax.set_zlim(contourz,Z.max()*1.1)
+    ax.tick_params(labelsize=20)
+    ax.set_xticks([min(x), max(x), 0.0])
+    ax.set_yticks([min(y), max(y), 0.0])
+    #ax.set_zticks([min(Z), max(Z), 0.0])
     return fig
 
 def kernel_estimate(x,y,bins=30):
@@ -113,7 +117,7 @@ if __name__ == '__main__':
     print "Avg n = ", avg_n(X,Y,Z)
     print "StDev n = ", std_n(X,Y,Z)
 
-    #fig = qsurf(x,y)
-    #plt.show()
+    fig = qsurf(x,y)
+    plt.show()
 
 

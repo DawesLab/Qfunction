@@ -7,6 +7,7 @@ from scipy.stats import gaussian_kde
 from matplotlib import rc
 
 def qsurf_publish(x,y,bins=30):
+    """Create a publication-ready figure of the Q-function as a surface plot"""
     fig = plt.figure(figsize=(13.5,8))  # PRL default width
     
     ax1 = fig.add_subplot(121, projection='3d')
@@ -56,6 +57,7 @@ def qsurf_publish(x,y,bins=30):
     return fig
 
 def qfuncimage(array,bins=30,dolog=False,scaling=1.0):
+    """Create a color-mapped image of the Q-function"""
     x = scaling*np.imag(array) # x is first dim. so imshow has it vertical
     y = scaling*np.real(array) # y is second dim. so imshow has it horizontal
 
@@ -115,8 +117,13 @@ def qsurf(x,y,bins=30,bw_method='scott'):
     return fig
 
 def kernel_estimate(x,y,bins=30,bw_method='scott'):
-    """Use the x and y data sets to create a PDF over the x,y range.
-    Returns X,Y,Z where Z is the estimated PDF over X,Y"""
+    """Use the x and y data sets to create a probability density function (PDF) over the x,y range.
+    Returns X,Y,Z where Z is the estimated PDF over X,Y
+    Two inputs are the number of bins and the bandwidth method. 
+
+    bw_method:
+    The method used to calculate the estimator bandwidth. This can be ‘scott’, ‘silverman’, a scalar constant or a callable. If a scalar, this will be used directly as kde.factor. If a callable, it should take a gaussian_kde instance as only parameter and return a scalar.
+    """
     xmin = x.min()
     xmax = x.max()
     ymin = y.min()
@@ -133,18 +140,21 @@ def kernel_estimate(x,y,bins=30,bw_method='scott'):
     return X,Y,Z
 
 def avg_n(X,Y,Z):
+    """Calculate average n (photon number) from a Q-function estimated by the kernel_estimate"""
     return (Z*0.5*(X**2 + Y**2)).sum() - 1
 
-def est_avg_n(x,y):
+def avg_n_raw(x,y):
+    """Estimate average photon number from raw quadrature data"""
     return np.average(x**2+y**2)*0.5
 
 def std_n(X,Y,Z):
+    """Calculate the standard deviation of n (photon number) using the Q-function estimated by the kernel_estimate."""
     nsquared = (Z * (0.25*X**4 + 0.5*(X**2 * Y**2) + 0.25*Y**4 - 1.5*X**2 - 1.5*Y**2 + 1)).sum()
     avgn = avg_n(X,Y,Z)
     return np.sqrt(nsquared - avgn**2)
 
 def std_n_raw(x,y,bins=30):
-    """Compute standard deviation of photon number using the raw data.
+    """Compute standard deviation of photon number using the raw quadrature data.
     takes only x and y arrays, internally computes z
     
     This may be working after I fixed the normalization.
@@ -172,12 +182,14 @@ if __name__ == '__main__':
     y = np.imag(output[0:500])
 
     X,Y,Z = kernel_estimate(x,y,bins=bins,bw_method=bw_factor)
-    print "naive Avg n = %0.2f" % est_avg_n(x,y)
+    
+    print "Avg n (raw)= %0.2f" % avg_n_raw(x,y)
     n = avg_n(X,Y,Z)
     print "Avg n = %0.2f" % n
+    print "StDev n raw = %0.2f" % std_n_raw(x,y)
+
     stdn = std_n(X,Y,Z)
     print "StDev n = %0.2f" % stdn
-    print "StDev n raw = %0.2f" % std_n_raw(x,y)
     print "percent from QNL = %0.2f" % ((stdn/np.sqrt(n) - 1)*100)
 
     fig = qsurf(x,y,bw_method=bw_factor)

@@ -9,10 +9,10 @@ from matplotlib import rc
 def qsurf_publish(x,y,bins=30):
     """Create a publication-ready figure of the Q-function as a surface plot"""
     fig = plt.figure(figsize=(13.5,8))  # PRL default width
-    
+
     ax1 = fig.add_subplot(121, projection='3d')
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-    
+
     hist, xedges, yedges = np.histogram2d(x, y, bins)
     X, Y = np.meshgrid(xedges[:-1], yedges[:-1])
     Z = hist
@@ -29,7 +29,7 @@ def qsurf_publish(x,y,bins=30):
     surf2 = ax2.plot_surface(X,Y,Z,cstride=1,rstride=1,color="white",shade=False)
     contourz2 = (Z.min()-Z.max())*0.6  # where to put the contours
     cset2 = ax2.contour(X,Y,Z.reshape(X.shape),zdir='z',offset=contourz2)
-    
+
     ax1.set_xlabel(r'$x_p$')
     ax1.set_ylabel(r'$y_p$')
     ax1.set_zlabel(r'$Q$')
@@ -43,7 +43,7 @@ def qsurf_publish(x,y,bins=30):
     ax2.set_zlim(contourz,Z.max()*1.1)
     ax2.view_init(elev=10., azim=-45)
     ax2.grid(False)
-    
+
     #ax.set_xlim(-40, 40)
     #ax.set_ylim(-40, 40)
     #ax.zaxis.set_major_locator(LinearLocator(3))
@@ -84,7 +84,7 @@ def qfuncimage(array,bins=30,dolog=False,scaling=1.0):
 def qsurf(x,y,bins=30,bw_method='scott'):
     """Create a surface plot after calculating a kernel estimate"""
     X,Y,Z = kernel_estimate(x,y,bins,bw_method = bw_method)
-    
+
     #font = {'size':18}
     #rc('font', **font)
 
@@ -97,7 +97,7 @@ def qsurf(x,y,bins=30,bw_method='scott'):
     contourz = (Z.min()-Z.max())*1.2  # where to put the contours
 
     cset = ax.contour(X,Y,Z.reshape(X.shape),zdir='z',offset=contourz)
-    
+
     ax.set_xlabel(r'$x_p$')
     ##ax.set_xlim(-40, 40)
     ax.set_ylabel(r'$y_p$')
@@ -119,10 +119,10 @@ def qsurf(x,y,bins=30,bw_method='scott'):
 def kernel_estimate(x,y,bins=30,bw_method='scott'):
     """Use the x and y data sets to create a probability density function (PDF) over the x,y range.
     Returns X,Y,Z where Z is the estimated PDF over X,Y
-    Two inputs are the number of bins and the bandwidth method. 
+    Two inputs are the number of bins and the bandwidth method.
 
     bw_method:
-    The method used to calculate the estimator bandwidth. This can be ‘scott’, ‘silverman’, a scalar constant or a callable. If a scalar, this will be used directly as kde.factor. If a callable, it should take a gaussian_kde instance as only parameter and return a scalar.
+    The method used to calculate the estimator bandwidth. This can be 'scott', 'silverman', a scalar constant or a callable. If a scalar, this will be used directly as kde.factor. If a callable, it should take a gaussian_kde instance as only parameter and return a scalar.
     """
     xmin = x.min()
     xmax = x.max()
@@ -136,7 +136,9 @@ def kernel_estimate(x,y,bins=30,bw_method='scott'):
     kernel = gaussian_kde(values,bw_method = bw_method)
     print "KDE kernel factor: ", kernel.factor
     Z = np.reshape(kernel(positions).T, X.shape)
-    Z = Z/Z.sum() # normalize Z
+    binsize = (X[1,0] - X[0,0])*(Y[0,1] - Y[0,0])
+    norm = Z.sum()*binsize
+    Z = Z/norm # normalize Z
     return X,Y,Z
 
 def avg_n(X,Y,Z):
@@ -156,11 +158,11 @@ def std_n(X,Y,Z):
 def std_n_raw(x,y,bins=30):
     """Compute standard deviation of photon number using the raw quadrature data.
     takes only x and y arrays, internally computes z
-    
+
     This may be working after I fixed the normalization.
-    TODO: more testing 
+    TODO: more testing
     """
-    hist, xe, ye = np.histogram2d(x,y,bins) 
+    hist, xe, ye = np.histogram2d(x,y,bins)
     Z = hist/hist.sum() # normalize to the sum
     X, Y = np.meshgrid(xe[:-1], ye[:-1]) # TODO fix this to pick the center of the bin?
     nsquared = (Z * (0.25*X**4 + 0.5*(X**2 * Y**2) + 0.25*Y**4 - 1.5*X**2 - 1.5*Y**2 + 1)).sum()
@@ -170,7 +172,7 @@ def std_n_raw(x,y,bins=30):
 if __name__ == '__main__':
     import numpy as np
     import sys
-     
+
     bw_factor = 0.20
     bins = 60
 
@@ -182,7 +184,7 @@ if __name__ == '__main__':
     y = np.imag(output[0:500])
 
     X,Y,Z = kernel_estimate(x,y,bins=bins,bw_method=bw_factor)
-    
+
     print "Avg n (raw)= %0.2f" % avg_n_raw(x,y)
     n = avg_n(X,Y,Z)
     print "Avg n = %0.2f" % n

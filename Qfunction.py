@@ -134,7 +134,7 @@ def kernel_estimate(x,y,bins=30,bw_method='scott'):
     positions = np.vstack([X.ravel(), Y.ravel()])
     values = np.vstack([x, y])
     kernel = gaussian_kde(values,bw_method = bw_method)
-    print "KDE kernel factor: ", kernel.factor
+    print("KDE kernel factor: ", kernel.factor)
     Z = np.reshape(kernel(positions).T, X.shape)
     binsize = (X[1,0] - X[0,0])*(Y[0,1] - Y[0,0])
     norm = Z.sum()*binsize
@@ -185,14 +185,14 @@ if __name__ == '__main__':
 
     X,Y,Z = kernel_estimate(x,y,bins=bins,bw_method=bw_factor)
 
-    print "Avg n (raw)= %0.2f" % avg_n_raw(x,y)
+    print("Avg n (raw)= %0.2f" % avg_n_raw(x,y))
     n = avg_n(X,Y,Z)
-    print "Avg n = %0.2f" % n
-    print "StDev n raw = %0.2f" % std_n_raw(x,y)
+    print("Avg n = %0.2f" % n)
+    print("StDev n raw = %0.2f" % std_n_raw(x,y))
 
     stdn = std_n(X,Y,Z)
-    print "StDev n = %0.2f" % stdn
-    print "percent from QNL = %0.2f" % ((stdn/np.sqrt(n) - 1)*100)
+    print("StDev n = %0.2f" % stdn)
+    print("percent from QNL = %0.2f" % ((stdn/np.sqrt(n) - 1)*100))
 
     fig = qsurf(x,y,bw_method=bw_factor)
     fig.savefig("test.pdf")

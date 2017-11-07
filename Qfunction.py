@@ -1,4 +1,5 @@
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 import matplotlib.pyplot as plt
 from matplotlib.mlab import griddata
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
@@ -92,7 +93,7 @@ def qsurf(x,y,bins=30,bw_method='scott'):
     ax = fig.add_subplot(1, 1, 1, projection='3d')
     plt.subplots_adjust(left=0, right=0.9, top=1, bottom=0)
 
-    surf = ax.plot_surface(X,Y,Z.reshape(X.shape),cstride=2,rstride=2,color="white",shade=False)
+    surf = ax.plot_surface(X,Y,Z.reshape(X.shape),cstride=3,rstride=3,cmap=cm.GnBu)
 
     contourz = (Z.min()-Z.max())*1.2  # where to put the contours
 

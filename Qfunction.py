@@ -1,7 +1,7 @@
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 import matplotlib.pyplot as plt
-from matplotlib.mlab import griddata
+from scipy.interpolate import griddata
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
 from scipy.stats import gaussian_kde
